@@ -14,6 +14,7 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.39.0"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 var (
@@ -57,7 +58,7 @@ func Init(opts ...Option) (shutdown func(context.Context) error, err error) {
 	cfg := newConfig(opts...)
 
 	if !cfg.enabled {
-		tp := trace.NewNoopTracerProvider()
+		tp := noop.NewTracerProvider()
 		otel.SetTracerProvider(tp)
 		globalTracer.Store(tp.Tracer("qbp-lib"))
 		return func(ctx context.Context) error { return nil }, nil

@@ -7,6 +7,7 @@ import (
 	"github.com/QuickBill-Engineering/qbp-lib/tracing"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 func TestHeadersCarrier_Get(t *testing.T) {
@@ -87,16 +88,12 @@ func TestInject(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	ctx := context.Background()
 	headers := make(amqp.Table)
 
 	Inject(ctx, headers)
-
-	if headers == nil {
-		t.Error("expected headers to be non-nil after injection")
-	}
 }
 
 func TestExtract(t *testing.T) {
@@ -104,7 +101,7 @@ func TestExtract(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	headers := make(amqp.Table)
 	ctx := context.Background()
@@ -121,11 +118,11 @@ func TestInjectExtract_RoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	ctx := context.Background()
 
-	tp := trace.NewNoopTracerProvider()
+	tp := noop.NewTracerProvider()
 	ctx, span := tp.Tracer("test").Start(ctx, "test-span")
 	defer span.End()
 
@@ -163,7 +160,7 @@ func TestExtract_WithEmptyHeaders(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	headers := make(amqp.Table)
 	ctx := Extract(context.Background(), headers)
@@ -179,7 +176,7 @@ func TestInject_WithNilHeaders(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	ctx := context.Background()
 	var headers amqp.Table

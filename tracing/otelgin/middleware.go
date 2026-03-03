@@ -13,8 +13,7 @@ import (
 )
 
 type config struct {
-	filter      func(*gin.Context) bool
-	propagators propagation.TextMapCarrier
+	filter func(*gin.Context) bool
 }
 
 // Option configures the tracing middleware.

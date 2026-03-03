@@ -30,7 +30,7 @@ func TestDetachedContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	ctx := context.Background()
 	ctx = WithRequestID(ctx, "test-request-id")

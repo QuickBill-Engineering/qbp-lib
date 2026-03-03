@@ -12,7 +12,7 @@ func TestStart(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	ctx, finish := Start(context.Background(), Attr("test", "value"))
 	if ctx == nil {
@@ -30,7 +30,7 @@ func TestStartNamed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	ctx, finish := StartNamed(context.Background(), "test-span")
 	if ctx == nil {
@@ -48,7 +48,7 @@ func TestStartWithKind(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	ctx, finish := StartWithKind(
 		context.Background(),
@@ -71,7 +71,7 @@ func TestFinishWithError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	ctx, finish := Start(context.Background())
 	var testErr error = &testError{msg: "test error"}
@@ -87,7 +87,7 @@ func TestAddAttrs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	ctx, finish := Start(context.Background())
 	defer finish(nil)
@@ -100,7 +100,7 @@ func TestAddEvent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	ctx, finish := Start(context.Background())
 	defer finish(nil)

@@ -75,7 +75,7 @@ func TestConfigFromEnv(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			os.Clearenv()
 			for k, v := range tt.envVars {
-				os.Setenv(k, v)
+				_ = os.Setenv(k, v)
 			}
 
 			opts := ConfigFromEnv()

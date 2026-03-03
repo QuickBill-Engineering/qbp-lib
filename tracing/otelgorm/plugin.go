@@ -283,10 +283,3 @@ func (p *plugin) afterCallback() func(db *gorm.DB) {
 func tracer(ctx context.Context) trace.Tracer {
 	return trace.SpanFromContext(ctx).TracerProvider().Tracer("qbp-lib")
 }
-
-func startSpan(ctx context.Context, name string, attrs ...attribute.KeyValue) (context.Context, trace.Span) {
-	return tracer(ctx).Start(ctx, name,
-		trace.WithSpanKind(trace.SpanKindClient),
-		trace.WithAttributes(attrs...),
-	)
-}
