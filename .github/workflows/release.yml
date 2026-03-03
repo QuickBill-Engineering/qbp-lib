@@ -30,9 +30,9 @@ jobs:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
-          key: ${{ runner.os }}-go-release-${{ hashFiles('**/go.sum') }}
+          key: v2-${{ runner.os }}-go-release-${{ hashFiles('**/go.sum') }}
           restore-keys: |
-            ${{ runner.os }}-go-release-
+            v2-${{ runner.os }}-go-release-
 
       - name: Download dependencies
         run: go mod download
