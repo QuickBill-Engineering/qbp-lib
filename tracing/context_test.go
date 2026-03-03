@@ -35,7 +35,7 @@ func TestDetachedContext(t *testing.T) {
 	ctx := context.Background()
 	ctx = WithRequestID(ctx, "test-request-id")
 
-	ctx, span := tracer.Start(ctx, "test-span")
+	ctx, span := getTracer().Start(ctx, "test-span")
 	defer span.End()
 
 	detached := DetachedContext(ctx)

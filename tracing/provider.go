@@ -3,6 +3,7 @@ package tracing
 import (
 	"context"
 	"fmt"
+	"sync/atomic"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -16,8 +17,8 @@ import (
 )
 
 var (
-	globalTracerName string
-	tracer           trace.Tracer
+	// globalTracer stores a trace.Tracer; accessed atomically.
+	globalTracer atomic.Value
 )
 
 // Init creates and registers a global OpenTelemetry TracerProvider.
@@ -58,8 +59,7 @@ func Init(opts ...Option) (shutdown func(context.Context) error, err error) {
 	if !cfg.enabled {
 		tp := trace.NewNoopTracerProvider()
 		otel.SetTracerProvider(tp)
-		globalTracerName = "qbp-lib"
-		tracer = tp.Tracer(globalTracerName)
+		globalTracer.Store(tp.Tracer("qbp-lib"))
 		return func(ctx context.Context) error { return nil }, nil
 	}
 
@@ -80,9 +80,7 @@ func Init(opts ...Option) (shutdown func(context.Context) error, err error) {
 	)
 
 	otel.SetTracerProvider(tp)
-
-	globalTracerName = cfg.serviceName
-	tracer = tp.Tracer(globalTracerName)
+	globalTracer.Store(tp.Tracer(cfg.serviceName))
 
 	return func(ctx context.Context) error {
 		return tp.Shutdown(ctx)
@@ -149,4 +147,10 @@ func createResource(cfg *Config) (*resource.Resource, error) {
 			attribute.String("library", "qbp-lib"),
 		),
 	)
+}
+
+// getTracer returns the globally configured tracer, or nil if Init has not been called.
+func getTracer() trace.Tracer {
+	t, _ := globalTracer.Load().(trace.Tracer)
+	return t
 }

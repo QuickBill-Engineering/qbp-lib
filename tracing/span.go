@@ -2,6 +2,7 @@ package tracing
 
 import (
 	"context"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -108,11 +109,13 @@ func StartNamed(ctx context.Context, name string, attrs ...attribute.KeyValue) (
 //	    return s.httpClient.Get(ctx, "/api/data")
 //	}
 func StartWithKind(ctx context.Context, kind trace.SpanKind, name string, attrs ...attribute.KeyValue) (context.Context, FinishFunc) {
-	if tracer == nil {
+	t := getTracer()
+	if t == nil {
 		return ctx, func(errPtr *error) {}
 	}
 
 	_, file, line, _ := runtime.Caller(1)
+	file = filepath.Base(file)
 
 	allAttrs := append([]attribute.KeyValue{
 		attribute.String("code.function", name),
@@ -120,7 +123,7 @@ func StartWithKind(ctx context.Context, kind trace.SpanKind, name string, attrs 
 		attribute.Int("code.lineno", line),
 	}, attrs...)
 
-	ctx, span := tracer.Start(ctx, name,
+	ctx, span := t.Start(ctx, name,
 		trace.WithSpanKind(kind),
 		trace.WithAttributes(allAttrs...),
 	)

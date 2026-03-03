@@ -12,7 +12,7 @@ permissions:
 jobs:
   test:
     name: Unit Tests
-    runs-on: podman
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -53,6 +53,16 @@ jobs:
             gofmt -l .
             exit 1
           fi
+
+      - name: Install and run govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+      - name: Install and run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
 
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...

@@ -106,7 +106,16 @@ func WithEnvironment(v string) Option {
 //
 //	tracing.Init(tracing.WithSamplingRate(0.1)) // 10% of traces
 func WithSamplingRate(v float64) Option {
-	return func(c *Config) { c.samplingRate = v }
+	return func(c *Config) {
+		switch {
+		case v < 0.0:
+			c.samplingRate = 0.0
+		case v > 1.0:
+			c.samplingRate = 1.0
+		default:
+			c.samplingRate = v
+		}
+	}
 }
 
 // WithExporter sets the exporter type for sending traces.

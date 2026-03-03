@@ -6,12 +6,14 @@ on:
       - "v*"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   test:
     name: Test before release
-    runs-on: podman
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -51,6 +53,8 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code

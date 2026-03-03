@@ -1,6 +1,8 @@
 package otelgin
 
 import (
+	"unicode"
+
 	"github.com/QuickBill-Engineering/qbp-lib/tracing"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -142,10 +144,7 @@ func Middleware(opts ...Option) gin.HandlerFunc {
 //	r.Use(otelgin.Middleware())
 func RequestID() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		requestID := c.GetHeader("X-Request-ID")
-		if requestID == "" {
-			requestID = uuid.New().String()
-		}
+		requestID := sanitizeRequestID(c.GetHeader("X-Request-ID"))
 
 		ctx := tracing.WithRequestID(c.Request.Context(), requestID)
 		c.Request = c.Request.WithContext(ctx)
@@ -153,4 +152,21 @@ func RequestID() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+const maxRequestIDLen = 128
+
+// sanitizeRequestID validates and sanitizes an incoming X-Request-ID header value.
+// It enforces a maximum length, rejects non-printable characters and newlines,
+// and regenerates a UUID if the input is invalid or empty.
+func sanitizeRequestID(id string) string {
+	if id == "" || len(id) > maxRequestIDLen {
+		return uuid.New().String()
+	}
+	for _, r := range id {
+		if r == '\n' || r == '\r' || !unicode.IsPrint(r) {
+			return uuid.New().String()
+		}
+	}
+	return id
 }
