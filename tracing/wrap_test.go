@@ -11,7 +11,7 @@ func TestWrap(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	result, err := Wrap(context.Background(), func(ctx context.Context) (string, error) {
 		return "success", nil
@@ -30,7 +30,7 @@ func TestWrapWithError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	testErr := errors.New("test error")
 	result, err := Wrap(context.Background(), func(ctx context.Context) (string, error) {
@@ -50,7 +50,7 @@ func TestWrapVoid(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	err = WrapVoid(context.Background(), func(ctx context.Context) error {
 		return nil
@@ -66,7 +66,7 @@ func TestWrapVoidWithError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	testErr := errors.New("test error")
 	err = WrapVoid(context.Background(), func(ctx context.Context) error {
@@ -83,7 +83,7 @@ func TestWrapNamed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init: %v", err)
 	}
-	defer shutdown(context.Background())
+	defer func() { _ = shutdown(context.Background()) }()
 
 	result, err := WrapNamed(context.Background(), "custom-span", func(ctx context.Context) (int, error) {
 		return 42, nil
