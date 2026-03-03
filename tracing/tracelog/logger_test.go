@@ -15,7 +15,7 @@ func TestInfo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	var buf bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&buf, nil))
@@ -34,7 +34,7 @@ func TestError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	var buf bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&buf, nil))
@@ -53,7 +53,7 @@ func TestWarn(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	var buf bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&buf, nil))
@@ -72,7 +72,7 @@ func TestDebug(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	var buf bytes.Buffer
 	handler := slog.NewJSONHandler(&buf, &slog.HandlerOptions{
@@ -94,7 +94,7 @@ func TestWithTrace_NoSpan(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	var buf bytes.Buffer
 	baseLogger := slog.New(slog.NewJSONHandler(&buf, nil))
@@ -114,7 +114,7 @@ func TestWithTrace_WithRequestID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	var buf bytes.Buffer
 	baseLogger := slog.New(slog.NewJSONHandler(&buf, nil))
@@ -136,7 +136,7 @@ func TestWithTrace_WithSpan(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	var buf bytes.Buffer
 	baseLogger := slog.New(slog.NewJSONHandler(&buf, nil))
@@ -159,7 +159,7 @@ func TestWithTrace_WithSpanAndRequestID(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	var buf bytes.Buffer
 	baseLogger := slog.New(slog.NewJSONHandler(&buf, nil))
@@ -183,7 +183,7 @@ func TestInfo_WithMultipleArgs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	var buf bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&buf, nil))

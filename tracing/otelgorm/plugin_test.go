@@ -33,7 +33,7 @@ func TestNewPlugin_Basic(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	db := setupTestDB(t)
 
@@ -49,7 +49,7 @@ func TestNewPlugin_WithOptions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	db := setupTestDB(t)
 
@@ -69,7 +69,7 @@ func TestPlugin_Create(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	db := setupTestDB(t)
 	err = db.Use(NewPlugin(WithDBName("testdb")))
@@ -92,7 +92,7 @@ func TestPlugin_Query(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	db := setupTestDB(t)
 	err = db.Use(NewPlugin(WithDBName("testdb")))
@@ -117,7 +117,7 @@ func TestPlugin_Update(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	db := setupTestDB(t)
 	err = db.Use(NewPlugin(WithDBName("testdb")))
@@ -146,7 +146,7 @@ func TestPlugin_Delete(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
@@ -185,7 +185,7 @@ func TestPlugin_ExcludeTables(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	db := setupTestDB(t)
 	err = db.Use(NewPlugin(
@@ -208,7 +208,7 @@ func TestPlugin_WithContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	db := setupTestDB(t)
 	err = db.Use(NewPlugin(WithDBName("testdb")))
@@ -229,7 +229,7 @@ func TestPlugin_RecordRowsAffected(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	db := setupTestDB(t)
 	err = db.Use(NewPlugin(

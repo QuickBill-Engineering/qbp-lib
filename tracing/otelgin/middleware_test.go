@@ -18,7 +18,7 @@ func TestMiddleware_BasicRequest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	r := gin.New()
 	r.Use(Middleware())
@@ -41,7 +41,7 @@ func TestMiddleware_WithFilter(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	r := gin.New()
 	r.Use(Middleware(
@@ -80,7 +80,7 @@ func TestMiddleware_WithRoutePattern(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	r := gin.New()
 	r.Use(Middleware())
@@ -103,7 +103,7 @@ func TestMiddleware_ErrorStatus(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to init tracing: %v", err)
 	}
-	defer shutdown(nil)
+	defer func() { _ = shutdown(nil) }()
 
 	r := gin.New()
 	r.Use(Middleware())
