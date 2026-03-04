@@ -1,12 +1,18 @@
 package otelgin
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/QuickBill-Engineering/qbp-lib/tracing"
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
 
 func init() {
@@ -186,4 +192,107 @@ func TestRequestID_MultipleRequests(t *testing.T) {
 	if id1 == id2 {
 		t.Error("expected different request IDs for different requests")
 	}
+}
+
+func TestMiddleware_SpanNameWithQuery(t *testing.T) {
+	exporter := tracetest.NewInMemoryExporter()
+	tp := trace.NewTracerProvider(trace.WithSyncer(exporter))
+	otel.SetTracerProvider(tp)
+	defer func() { _ = tp.Shutdown(context.Background()) }()
+
+	r := gin.New()
+	r.Use(Middleware())
+	r.GET("/users/:id", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"id": c.Param("id")})
+	})
+
+	req := httptest.NewRequest("GET", "/users/123?date=2022-01-03", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	spans := exporter.GetSpans()
+	require.Len(t, spans, 1, "expected one span")
+
+	span := spans[0]
+	assert.Equal(t, "/users/123?date=2022-01-03", span.Name, "span name should be request URI with query string")
+}
+
+func TestMiddleware_SpanAttributes(t *testing.T) {
+	exporter := tracetest.NewInMemoryExporter()
+	tp := trace.NewTracerProvider(trace.WithSyncer(exporter))
+	otel.SetTracerProvider(tp)
+	defer func() { _ = tp.Shutdown(context.Background()) }()
+
+	r := gin.New()
+	r.Use(Middleware())
+	r.GET("/company/:id/balance", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"id": c.Param("id")})
+	})
+
+	req := httptest.NewRequest("GET", "/company/456/balance?date=2022-01-03", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	spans := exporter.GetSpans()
+	require.Len(t, spans, 1, "expected one span")
+
+	span := spans[0]
+
+	attrs := make(map[string]interface{})
+	for _, attr := range span.Attributes {
+		attrs[string(attr.Key)] = attr.Value.AsInterface()
+	}
+
+	assert.Equal(t, "GET", attrs["http.request.method"])
+	assert.Equal(t, "/company/456/balance", attrs["url.path"])
+	assert.Equal(t, "date=2022-01-03", attrs["url.query"])
+	assert.Equal(t, "/company/:id/balance", attrs["http.route"])
+	assert.Equal(t, int64(200), attrs["http.response.status_code"])
+}
+
+func TestMiddleware_SpanNameWithoutQuery(t *testing.T) {
+	exporter := tracetest.NewInMemoryExporter()
+	tp := trace.NewTracerProvider(trace.WithSyncer(exporter))
+	otel.SetTracerProvider(tp)
+	defer func() { _ = tp.Shutdown(context.Background()) }()
+
+	r := gin.New()
+	r.Use(Middleware())
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest("GET", "/health", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	spans := exporter.GetSpans()
+	require.Len(t, spans, 1, "expected one span")
+
+	span := spans[0]
+	assert.Equal(t, "/health", span.Name, "span name should be path without query when no query present")
+}
+
+func TestMiddleware_UsesGlobalTracerProvider(t *testing.T) {
+	exporter := tracetest.NewInMemoryExporter()
+	tp := trace.NewTracerProvider(trace.WithSyncer(exporter))
+	otel.SetTracerProvider(tp)
+	defer func() { _ = tp.Shutdown(context.Background()) }()
+
+	r := gin.New()
+	r.Use(Middleware())
+	r.GET("/test", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	})
+
+	req := httptest.NewRequest("GET", "/test", nil)
+	w := httptest.NewRecorder()
+
+	r.ServeHTTP(w, req)
+
+	spans := exporter.GetSpans()
+	assert.Len(t, spans, 1, "middleware should use global TracerProvider and create spans")
 }
