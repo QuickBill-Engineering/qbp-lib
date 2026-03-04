@@ -6,6 +6,7 @@ import (
 	"github.com/QuickBill-Engineering/qbp-lib/tracing"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/propagation"
 	semconv "go.opentelemetry.io/otel/semconv/v1.39.0"
@@ -44,8 +45,8 @@ func WithFilter(f func(*gin.Context) bool) Option {
 //
 // The middleware:
 //  1. Extracts W3C traceparent/tracestate from incoming request headers
-//  2. Creates a server span named after the matched route pattern (c.FullPath())
-//  3. Records http.method, http.route, http.status_code as span attributes
+//  2. Creates a server span named after the request URI (path + query string)
+//  3. Records http.method, http.route, url.path, url.query, http.status_code as span attributes
 //  4. Sets span status to Error for 4xx and 5xx responses
 //  5. Injects trace context into response headers for distributed tracing
 //
@@ -91,18 +92,19 @@ func Middleware(opts ...Option) gin.HandlerFunc {
 		req := c.Request
 		ctx := propagator.Extract(req.Context(), propagation.HeaderCarrier(req.Header))
 
-		spanName := c.FullPath()
+		spanName := req.URL.RequestURI()
 		if spanName == "" {
-			spanName = req.URL.Path
+			spanName = "/"
 		}
 
-		ctx, span := trace.SpanFromContext(ctx).TracerProvider().Tracer("qbp-lib").Start(
+		ctx, span := otel.Tracer("qbp-lib").Start(
 			ctx,
 			spanName,
 			trace.WithSpanKind(trace.SpanKindServer),
 			trace.WithAttributes(
 				semconv.HTTPRequestMethodKey.String(req.Method),
 				semconv.URLPath(req.URL.Path),
+				semconv.URLQuery(req.URL.RawQuery),
 				attribute.String("http.route", c.FullPath()),
 			),
 		)
